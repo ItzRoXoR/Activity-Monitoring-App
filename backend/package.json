@@ -1,0 +1,30 @@
+{
+    "name": "fitness-backend",
+    "version": "1.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "node --watch src/server.ts",
+        "start": "node src/server.ts",
+        "migrate": "node src/db/migrate.ts",
+        "seed": "node src/db/seed.ts",
+        "setup": "node src/db/migrate.ts && node src/db/seed.ts",
+        "test": "node --test tests/integration.test.ts"
+    },
+    "dependencies": {
+        "bcrypt": "^5.1.1",
+        "express": "^5.1.0",
+        "jsonwebtoken": "^9.0.2",
+        "pg": "^8.13.3",
+        "uuid": "^11.1.0",
+        "zod": "^3.24.4"
+    },
+    "devDependencies": {
+        "@types/bcrypt": "^5.0.2",
+        "@types/express": "^5.0.2",
+        "@types/jsonwebtoken": "^9.0.9",
+        "@types/node": "^22.15.3",
+        "@types/pg": "^8.11.13",
+        "@types/uuid": "^10.0.0",
+        "typescript": "^5.9.3"
+    }
+}
