@@ -4,13 +4,10 @@ import com.app.fitness.http.dto.*
 import retrofit2.Response
 import retrofit2.http.*
 
-/**
- * Retrofit service interface — maps all endpoints of the Fitness backend.
- * All coroutine methods return [Response] so callers can inspect HTTP codes.
- */
+// retrofit service interface — one method per backend endpoint
 internal interface FitnessApiService {
 
-    // ── Auth ──────────────────────────────────────────────────────────────────
+    // -- auth --
 
     @POST("auth/register")
     suspend fun register(@Body body: RegisterRequest): Response<AuthResponse>
@@ -21,7 +18,7 @@ internal interface FitnessApiService {
     @GET("auth/me")
     suspend fun me(): Response<AuthMeResponse>
 
-    // ── User ──────────────────────────────────────────────────────────────────
+    // -- user --
 
     @GET("user")
     suspend fun getUser(): Response<UserDto>
@@ -38,7 +35,7 @@ internal interface FitnessApiService {
     @DELETE("user/dnd")
     suspend fun clearDnd(): Response<UserDto>
 
-    // ── Activity ──────────────────────────────────────────────────────────────
+    // -- activity --
 
     @GET("activity/today")
     suspend fun getTodayActivity(): Response<DailyActivityDto>
@@ -55,7 +52,7 @@ internal interface FitnessApiService {
     @POST("activity/upload")
     suspend fun uploadSteps(): Response<UploadResponse>
 
-    // ── Weight ────────────────────────────────────────────────────────────────
+    // -- weight --
 
     @POST("weight")
     suspend fun logWeight(@Body body: LogWeightRequest): Response<WeightEntryDto>
@@ -66,7 +63,7 @@ internal interface FitnessApiService {
     @GET("weight/latest")
     suspend fun getLatestWeight(): Response<WeightEntryDto?>
 
-    // ── Workouts ──────────────────────────────────────────────────────────────
+    // -- workouts --
 
     @GET("workouts")
     suspend fun getAllWorkouts(): Response<List<WorkoutDto>>
@@ -89,7 +86,7 @@ internal interface FitnessApiService {
     @POST("workouts/{id}/favorite")
     suspend fun toggleFavorite(@Path("id") id: String): Response<ToggleFavoriteResponse>
 
-    // ── Sessions ──────────────────────────────────────────────────────────────
+    // -- sessions --
 
     @POST("sessions/start")
     suspend fun startSession(@Body body: StartSessionRequest): Response<WorkoutSessionDto>
@@ -102,45 +99,9 @@ internal interface FitnessApiService {
 
     @PUT("sessions/{id}/abandon")
     suspend fun abandonSession(@Path("id") id: String): Response<WorkoutSessionDto>
-
-    // ── Statistics ────────────────────────────────────────────────────────────
-
-    @GET("stats/steps")
-    suspend fun getStepsStats(@Query("period") period: String): Response<StatsDataDto>
-
-    @GET("stats/calories")
-    suspend fun getCaloriesStats(@Query("period") period: String): Response<StatsDataDto>
-
-    @GET("stats/distance")
-    suspend fun getDistanceStats(@Query("period") period: String): Response<StatsDataDto>
-
-    @GET("stats/weight")
-    suspend fun getWeightStats(@Query("period") period: String): Response<StatsDataDto>
-
-    @GET("stats/bmi")
-    suspend fun getBmi(): Response<BmiResultDto>
-
-    // ── Notifications ─────────────────────────────────────────────────────────
-
-    @GET("notifications")
-    suspend fun getNotifications(): Response<List<NotificationDto>>
-
-    @PUT("notifications/{id}/read")
-    suspend fun markNotificationRead(@Path("id") id: String): Response<SuccessResponse>
-
-    @POST("notifications/goal-reminder")
-    suspend fun triggerGoalReminder(): Response<NotificationActionResponse>
-
-    @POST("notifications/goal-achieved")
-    suspend fun postGoalAchieved(): Response<NotificationActionResponse>
-
-    @POST("notifications/weight-reminder")
-    suspend fun triggerWeightReminder(): Response<NotificationActionResponse>
 }
 
-// ── Small one-off response wrappers ───────────────────────────────────────────
-
+// small response wrappers
 data class AuthMeResponse(val authenticated: Boolean, val user: UserDto?)
 data class AddedCaloriesResponse(val added: Double, val date: String)
 data class UploadResponse(val message: String, val date: String, val steps: Int?)
-data class SuccessResponse(val success: Boolean)

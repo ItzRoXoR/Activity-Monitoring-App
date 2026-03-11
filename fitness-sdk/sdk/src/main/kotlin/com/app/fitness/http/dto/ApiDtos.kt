@@ -1,114 +1,67 @@
 package com.app.fitness.http.dto
 
-import com.google.gson.annotations.SerializedName
+// -- auth --
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
-
-data class LoginRequest(
-    val username: String,
-    val password: String
-)
+data class LoginRequest(val username: String, val password: String)
 
 data class RegisterRequest(
-    val name: String,
-    val username: String,
-    val password: String,
-    val gender: String,
-    val dateOfBirth: String,
-    val weightKg: Float,
-    val heightCm: Float,
-    val dailyStepsGoal: Int,
-    val dailyCaloriesGoal: Int
+    val name: String, val username: String, val password: String,
+    val gender: String, val dateOfBirth: String,
+    val weightKg: Float, val heightCm: Float,
+    val dailyStepsGoal: Int, val dailyCaloriesGoal: Int
 )
 
-data class AuthResponse(
-    val token: String,
-    val user: UserDto
-)
+data class AuthResponse(val token: String, val user: UserDto)
 
-// ── User ──────────────────────────────────────────────────────────────────────
+// -- user --
 
 data class UserDto(
-    val id: String,
-    val name: String,
-    val username: String,
-    val gender: String,
-    val dateOfBirth: String,
-    val weightKg: Float,
-    val heightCm: Float,
-    val dailyStepsGoal: Int,
-    val dailyCaloriesGoal: Int,
-    val doNotDisturbUntil: String?,
-    val doNotDisturbPermanently: Boolean
+    val id: String, val name: String, val username: String,
+    val gender: String, val dateOfBirth: String,
+    val weightKg: Float, val heightCm: Float,
+    val dailyStepsGoal: Int, val dailyCaloriesGoal: Int,
+    val doNotDisturbUntil: String?, val doNotDisturbPermanently: Boolean
 )
 
 data class UpdateProfileRequest(
-    val gender: String? = null,
-    val dateOfBirth: String? = null,
-    val weightKg: Float? = null,
-    val heightCm: Float? = null,
-    val username: String? = null,
-    val password: String? = null
+    val gender: String? = null, val dateOfBirth: String? = null,
+    val weightKg: Float? = null, val heightCm: Float? = null,
+    val username: String? = null, val password: String? = null
 )
 
-data class UpdateGoalsRequest(
-    val stepsGoal: Int,
-    val caloriesGoal: Int
-)
+data class UpdateGoalsRequest(val stepsGoal: Int, val caloriesGoal: Int)
 
 data class SetDndRequest(val duration: String)
 
-// ── Activity ──────────────────────────────────────────────────────────────────
+// -- activity --
 
 data class DailyActivityDto(
-    val date: String,
-    val steps: Int,
-    val burnedCalories: Double,
-    val distanceKm: Double
+    val date: String, val steps: Int,
+    val burnedCalories: Double, val distanceKm: Double
 )
 
-data class SaveStepsRequest(
-    val totalStepsSinceBoot: Int,
-    val timestamp: String
-)
+data class SaveStepsRequest(val totalStepsSinceBoot: Int, val timestamp: String)
 
-data class AddCaloriesRequest(
-    val calories: Double,
-    val timestamp: String? = null
-)
+data class AddCaloriesRequest(val calories: Double, val timestamp: String? = null)
 
-// ── Weight ────────────────────────────────────────────────────────────────────
+// -- weight --
 
-data class WeightEntryDto(
-    val date: String,
-    val weightKg: Float
-)
+data class WeightEntryDto(val date: String, val weightKg: Float)
 
-data class LogWeightRequest(
-    val weightKg: Float,
-    val date: String? = null
-)
+data class LogWeightRequest(val weightKg: Float, val date: String? = null)
 
-// ── Workout ───────────────────────────────────────────────────────────────────
+// -- workout --
 
 data class ExerciseDto(
-    val id: String,
-    val title: String,
-    val muscleGroup: String,
-    val met: Double,
-    val durationSeconds: Int,
-    val restAfterSeconds: Int,
+    val id: String, val title: String, val muscleGroup: String,
+    val met: Double, val durationSeconds: Int, val restAfterSeconds: Int,
     val imageResId: Int?
 )
 
 data class WorkoutDto(
-    val id: String,
-    val title: String,
-    val type: String,
-    val difficulty: String,
-    val durationMinutes: Int,
-    val exercises: List<ExerciseDto>,
-    val isFavorite: Boolean
+    val id: String, val title: String, val type: String,
+    val difficulty: String, val durationMinutes: Int,
+    val exercises: List<ExerciseDto>, val isFavorite: Boolean
 )
 
 data class WorkoutFilterRequest(
@@ -120,53 +73,16 @@ data class WorkoutFilterRequest(
 
 data class ToggleFavoriteResponse(val isFavorite: Boolean)
 
-// ── Session ───────────────────────────────────────────────────────────────────
+// -- session --
 
 data class StartSessionRequest(val workoutId: String)
 
 data class CompleteSessionRequest(
-    val burnedCalories: Double,
-    val finishedAt: String? = null
+    val burnedCalories: Double, val finishedAt: String? = null
 )
 
 data class WorkoutSessionDto(
-    val id: String,
-    val workoutId: String,
-    val startedAt: String,
-    val finishedAt: String?,
-    val burnedCalories: Double,
-    val completedEarly: Boolean
-)
-
-// ── Statistics ────────────────────────────────────────────────────────────────
-
-data class ChartDataPointDto(
-    val label: String,
-    val value: Double
-)
-
-data class StatsDataDto(
-    val points: List<ChartDataPointDto>,
-    val averagePerDay: Double?
-)
-
-data class BmiResultDto(
-    val bmi: Double,
-    val category: String
-)
-
-// ── Notifications ─────────────────────────────────────────────────────────────
-
-data class NotificationDto(
-    val id: String,
-    val type: String,
-    val message: String,
-    val createdAt: String,
-    val isRead: Boolean
-)
-
-data class NotificationActionResponse(
-    val posted: Boolean,
-    val message: String? = null,
-    val reason: String? = null
+    val id: String, val workoutId: String,
+    val startedAt: String, val finishedAt: String?,
+    val burnedCalories: Double, val completedEarly: Boolean
 )

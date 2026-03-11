@@ -51,7 +51,7 @@ import java.time.LocalDateTime
 class StepCounterServiceImpl : Service(), StepCounterService, SensorEventListener {
 
     // Injected by FitnessSdk via companion property before start
-    internal lateinit var activityRepository: ActivityRepository
+    private lateinit var activityRepository: ActivityRepository
 
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
@@ -65,6 +65,9 @@ class StepCounterServiceImpl : Service(), StepCounterService, SensorEventListene
 
     override fun onCreate() {
         super.onCreate()
+        activityRepository = checkNotNull(activityRepositoryRef) {
+            "activityRepository not set — call FitnessSdk.startStepCounting() to start the service"
+        }
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildForegroundNotification())
     }
@@ -144,6 +147,8 @@ class StepCounterServiceImpl : Service(), StepCounterService, SensorEventListene
         const val ACTION_STOP     = "com.app.fitness.ACTION_STOP_TRACKING"
         const val CHANNEL_ID      = "fitness_step_channel"
         const val NOTIFICATION_ID = 2001
+
+        @Volatile internal var activityRepositoryRef: ActivityRepository? = null
 
         /** Convenience helper — starts the service. */
         fun start(context: Context) {

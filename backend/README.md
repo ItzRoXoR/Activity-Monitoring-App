@@ -1,24 +1,19 @@
 # Fitness Backend
 
-Backend for the fitness mobile application. Built with TypeScript, Express, Zod, and PostgreSQL.  
-Runs directly on **Node.js 24** (no compilation to JavaScript).
+REST API for the fitness mobile application. Built with NestJS + TypeScript + PostgreSQL.
 
 ## Prerequisites
 
-- Node.js ≥ 22.6 (for native TypeScript + `--watch`)
+- Node.js >= 18
 - PostgreSQL 14+ (or Docker)
 
 ## Quick Start
 
 ### 1. Start PostgreSQL
 
-Using Docker (easiest):
-
 ```bash
 docker compose up -d
 ```
-
-Or point `.env` → `DATABASE_URL` to your existing Postgres instance.
 
 ### 2. Install dependencies
 
@@ -81,63 +76,11 @@ Server runs on `http://localhost:3000`.
 | `POST` | `/api/sessions/start` | ✓ | Start workout session |
 | `PUT` | `/api/sessions/:id/complete` | ✓ | Complete session |
 | `PUT` | `/api/sessions/:id/abandon` | ✓ | Abandon session |
-| **Statistics** | | | |
-| `GET` | `/api/stats/steps?period=WEEK` | ✓ | Steps chart data |
-| `GET` | `/api/stats/calories?period=WEEK` | ✓ | Calories chart data |
-| `GET` | `/api/stats/distance?period=WEEK` | ✓ | Distance chart data |
-| `GET` | `/api/stats/weight?period=WEEK` | ✓ | Weight chart data |
-| `GET` | `/api/stats/bmi` | ✓ | BMI calculation |
-| **Notifications** | | | |
-| `GET` | `/api/notifications` | ✓ | Unread notifications |
-| `PUT` | `/api/notifications/:id/read` | ✓ | Mark notification read |
-| `POST` | `/api/notifications/goal-reminder` | ✓ | Trigger goal reminder check |
-| `POST` | `/api/notifications/goal-achieved` | ✓ | Post goal achieved notification |
-| `POST` | `/api/notifications/weight-reminder` | ✓ | Trigger weight reminder check |
 | **Calories (utility)** | | | |
 | `GET` | `/api/calories/exercise?met=&weightKg=&durationSeconds=` | — | Calculate exercise calories |
 | `GET` | `/api/calories/workout/:id?weightKg=` | — | Calculate workout calories |
 | `GET` | `/api/calories/steps?steps=&weightKg=&heightCm=` | — | Calories & distance from steps |
 
-## Test Scripts
-
-The `scripts/` folder contains individual numbered `.ts` files that demonstrate every API endpoint.
-
-```bash
-# Run all scripts sequentially (full demo):
-node scripts/run-all.ts
-
-# Or run individually:
-node scripts/01-health.ts
-node scripts/02-register.ts
-node scripts/09-all-workouts.ts
-# ... etc.
-```
-
 ## Project Structure
 
-```
-backend/
-├── src/
-│   ├── server.ts              # Entry point
-│   ├── schemas.ts             # Zod validation schemas
-│   ├── db/
-│   │   ├── pool.ts            # PG connection pool + .env loader
-│   │   ├── migrate.ts         # Database migrations
-│   │   └── seed.ts            # Seed data (exercises, workouts)
-│   ├── middleware/
-│   │   └── auth.ts            # JWT auth + Zod validation middleware
-│   └── routes/
-│       ├── auth.ts            # Register, login, me
-│       ├── user.ts            # Profile, goals, DnD
-│       ├── activity.ts        # Steps, calories, activity history
-│       ├── weight.ts          # Weight logging & history
-│       ├── workouts.ts        # Workout browsing, filtering, favorites
-│       ├── sessions.ts        # Workout session lifecycle
-│       ├── stats.ts           # Statistics & BMI
-│       ├── notifications.ts   # Notification workers (simulated)
-│       └── calories.ts        # Calorie calculator utility
-├── scripts/                   # HTTP test scripts
-├── docker-compose.yml         # PostgreSQL via Docker
-├── .env                       # Environment variables
-└── package.json
-```
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed structure and how modules connect.

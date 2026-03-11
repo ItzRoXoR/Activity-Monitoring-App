@@ -4,9 +4,8 @@ import com.app.fitness.*
 import com.app.fitness.http.dto.*
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
-/** Maps backend DTOs to domain model objects. Internal to the SDK. */
+// maps backend dtos to domain model objects
 internal object DtoMapper {
 
     fun UserDto.toDomain() = User(
@@ -20,9 +19,7 @@ internal object DtoMapper {
         dailyStepsGoal = dailyStepsGoal,
         dailyCaloriesGoal = dailyCaloriesGoal,
         doNotDisturbUntil = doNotDisturbUntil?.let {
-            runCatching {
-                LocalDateTime.parse(it.replace("Z", "").take(19))
-            }.getOrNull()
+            runCatching { LocalDateTime.parse(it.replace("Z", "").take(19)) }.getOrNull()
         },
         doNotDisturbPermanently = doNotDisturbPermanently
     )
@@ -68,25 +65,5 @@ internal object DtoMapper {
         },
         burnedCalories = burnedCalories,
         completedEarly = completedEarly
-    )
-
-    fun ChartDataPointDto.toDomain() = ChartDataPoint(label = label, value = value)
-
-    fun StatsDataDto.toDomain() = StatsData(
-        points = points.map { it.toDomain() },
-        averagePerDay = averagePerDay
-    )
-
-    fun BmiResultDto.toDomain() = BmiResult(
-        bmi = bmi,
-        category = BmiCategory.valueOf(category)
-    )
-
-    fun NotificationDto.toDomain() = AppNotification(
-        id = id,
-        type = NotificationType.valueOf(type),
-        message = message,
-        createdAt = LocalDateTime.parse(createdAt.replace("Z", "").take(19)),
-        isRead = isRead
     )
 }

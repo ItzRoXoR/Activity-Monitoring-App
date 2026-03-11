@@ -1,0 +1,18 @@
+# Built output
+build/
+.gradle/
+
+# Heap dumps
+*.hprof
+
+# Local configuration
+local.properties
+
+# Android Studio
+*.iml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+captures/
+.externalNativeBuild/
+.cxx/

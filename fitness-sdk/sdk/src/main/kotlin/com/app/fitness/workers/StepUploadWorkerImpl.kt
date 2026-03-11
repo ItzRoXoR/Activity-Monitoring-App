@@ -13,9 +13,8 @@ import java.time.LocalDate
  * On network failure WorkManager retries automatically with exponential back-off.
  *
  * ## Registering with WorkManager
- * Use [FitnessWorkerFactory] (recommended) or register manually via
- * [WorkManager.initialize] with a custom [WorkerFactory] that injects
- * [ActivityRepository].
+ * Register manually via [WorkManager.initialize] with a custom [WorkerFactory]
+ * that injects [ActivityRepository].
  *
  * ## Scheduling
  * ```kotlin
