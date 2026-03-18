@@ -22,13 +22,11 @@ class WorkoutSessionRepositoryImpl internal constructor(
 
     override suspend fun completeSession(
         sessionId: String,
-        burnedCalories: Double,
         finishedAt: LocalDateTime
     ): Result<WorkoutSession> = runCatching {
         val resp = api.completeSession(
             sessionId,
             CompleteSessionRequest(
-                burnedCalories = burnedCalories,
                 finishedAt = finishedAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "Z"
             )
         )

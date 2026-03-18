@@ -2,7 +2,6 @@ package com.app.fitness.http
 
 import com.app.fitness.*
 import com.app.fitness.http.DtoMapper.toDomain
-import com.app.fitness.http.dto.SetDndRequest
 import com.app.fitness.http.dto.UpdateGoalsRequest
 import com.app.fitness.http.dto.UpdateProfileRequest
 import java.time.LocalDate
@@ -48,15 +47,4 @@ class UserRepositoryImpl internal constructor(
             check(resp.isSuccessful) { "updateGoals failed: HTTP ${resp.code()}" }
             checkNotNull(resp.body()).toDomain()
         }
-
-    override suspend fun setDoNotDisturb(duration: DoNotDisturbDuration): Result<Unit> =
-        runCatching {
-            val resp = api.setDnd(SetDndRequest(duration.name))
-            check(resp.isSuccessful) { "setDnd failed: HTTP ${resp.code()}" }
-        }
-
-    override suspend fun clearDoNotDisturb(): Result<Unit> = runCatching {
-        val resp = api.clearDnd()
-        check(resp.isSuccessful) { "clearDnd failed: HTTP ${resp.code()}" }
-    }
 }

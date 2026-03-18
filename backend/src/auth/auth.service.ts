@@ -82,31 +82,6 @@ export class AuthService {
     return { token, user: this.formatUser(user) };
   }
 
-  async checkAuth(authHeader?: string) {
-    if (!authHeader?.startsWith('Bearer ')) {
-      return { authenticated: false };
-    }
-
-    try {
-      const token = authHeader.slice(7);
-      const payload = jwt.verify(token, JWT_SECRET) as { userId: string };
-
-      const result = await this.db.query(
-        'SELECT * FROM users WHERE id = $1',
-        [payload.userId],
-      );
-      const notFound = !result.rowCount || result.rowCount === 0;
-
-      if (notFound) {
-        return { authenticated: false };
-      }
-
-      return { authenticated: true, user: this.formatUser(result.rows[0]) };
-    } catch {
-      return { authenticated: false };
-    }
-  }
-
   // maps a raw db row into a clean user response object
   formatUser(row: any) {
     return {
@@ -119,8 +94,6 @@ export class AuthService {
       heightCm: row.height_cm,
       dailyStepsGoal: row.daily_steps_goal,
       dailyCaloriesGoal: row.daily_calories_goal,
-      doNotDisturbUntil: row.do_not_disturb_until,
-      doNotDisturbPermanently: row.do_not_disturb_permanently,
     };
   }
 }

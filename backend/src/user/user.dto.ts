@@ -34,10 +34,3 @@ export class UpdateGoalsDto {
   @IsInt() @IsPositive()
   caloriesGoal: number;
 }
-
-// -- set do not disturb --
-
-export class SetDndDto {
-  @IsIn(['ONE_DAY', 'ONE_WEEK', 'ONE_MONTH', 'PERMANENTLY'])
-  duration: string;
-}
