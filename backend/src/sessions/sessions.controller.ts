@@ -22,9 +22,7 @@ export class SessionsController {
     @Param('id') id: string,
     @Body() dto: CompleteSessionDto,
   ) {
-    return this.sessionsService.completeSession(
-      req.userId, id, dto.burnedCalories, dto.finishedAt,
-    );
+    return this.sessionsService.completeSession(req.userId, id, dto.finishedAt);
   }
 
   @Put(':id/abandon')

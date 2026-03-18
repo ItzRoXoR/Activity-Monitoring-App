@@ -97,6 +97,22 @@ const migrations = [
       );
     `,
   },
+  {
+    name: '002_remove_unused_schema',
+    sql: `
+      -- drop dead columns from users
+      ALTER TABLE users
+        DROP COLUMN IF EXISTS do_not_disturb_until,
+        DROP COLUMN IF EXISTS do_not_disturb_permanently;
+
+      -- drop dead column from exercises
+      ALTER TABLE exercises
+        DROP COLUMN IF EXISTS image_res_id;
+
+      -- drop unused weight tracking table
+      DROP TABLE IF EXISTS weight_entries;
+    `,
+  },
 ];
 
 async function migrate() {

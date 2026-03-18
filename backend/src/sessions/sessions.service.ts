@@ -38,8 +38,38 @@ export class SessionsService {
     return this.formatSession(result.rows[0]);
   }
 
-  async completeSession(userId: string, sessionId: string, burnedCalories: number, finishedAt?: string) {
+  async completeSession(userId: string, sessionId: string, finishedAt?: string) {
     const finished = finishedAt || new Date().toISOString();
+
+    // look up session to get workoutId
+    const sessionResult = await this.db.query(
+      'SELECT workout_id FROM workout_sessions WHERE id = $1 AND user_id = $2',
+      [sessionId, userId],
+    );
+    if (!sessionResult.rowCount || sessionResult.rowCount === 0) {
+      throw new NotFoundException('session not found');
+    }
+    const workoutId = sessionResult.rows[0].workout_id;
+
+    // look up user weight for calorie calculation
+    const userResult = await this.db.query(
+      'SELECT weight_kg FROM users WHERE id = $1',
+      [userId],
+    );
+    const weightKg = userResult.rows[0].weight_kg;
+
+    // calculate calories burned based on workout exercises (MET × weight × duration)
+    const exercisesResult = await this.db.query(
+      `SELECT e.met, e.duration_seconds FROM exercises e
+       JOIN workout_exercises we ON we.exercise_id = e.id
+       WHERE we.workout_id = $1`,
+      [workoutId],
+    );
+    let total = 0;
+    for (const ex of exercisesResult.rows) {
+      total += ex.met * weightKg * (ex.duration_seconds / 3600);
+    }
+    const burnedCalories = Math.round(total * 100) / 100;
 
     const result = await this.db.query(
       `UPDATE workout_sessions
@@ -48,11 +78,6 @@ export class SessionsService {
        RETURNING *`,
       [finished, burnedCalories, sessionId, userId],
     );
-
-    const notFound = !result.rowCount || result.rowCount === 0;
-    if (notFound) {
-      throw new NotFoundException('session not found');
-    }
 
     // also add the burned calories to today's activity
     const date = finished.slice(0, 10);

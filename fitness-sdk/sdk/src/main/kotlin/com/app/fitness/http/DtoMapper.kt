@@ -17,11 +17,7 @@ internal object DtoMapper {
         weightKg = weightKg,
         heightCm = heightCm,
         dailyStepsGoal = dailyStepsGoal,
-        dailyCaloriesGoal = dailyCaloriesGoal,
-        doNotDisturbUntil = doNotDisturbUntil?.let {
-            runCatching { LocalDateTime.parse(it.replace("Z", "").take(19)) }.getOrNull()
-        },
-        doNotDisturbPermanently = doNotDisturbPermanently
+        dailyCaloriesGoal = dailyCaloriesGoal
     )
 
     fun ExerciseDto.toDomain() = Exercise(
@@ -30,8 +26,7 @@ internal object DtoMapper {
         muscleGroup = MuscleGroup.valueOf(muscleGroup),
         met = met,
         durationSeconds = durationSeconds,
-        restAfterSeconds = restAfterSeconds,
-        imageResId = imageResId
+        restAfterSeconds = restAfterSeconds
     )
 
     fun WorkoutDto.toDomain() = Workout(
@@ -49,11 +44,6 @@ internal object DtoMapper {
         steps = steps,
         burnedCalories = burnedCalories,
         distanceKm = distanceKm
-    )
-
-    fun WeightEntryDto.toDomain() = WeightEntry(
-        date = LocalDate.parse(date.take(10)),
-        weightKg = weightKg
     )
 
     fun WorkoutSessionDto.toDomain() = WorkoutSession(

@@ -85,37 +85,5 @@ export class UserService {
     return this.authService.formatUser(result.rows[0]);
   }
 
-  async setDnd(userId: string, duration: string) {
-    // map duration enum to sql interval
-    const intervalMap: Record<string, string> = {
-      ONE_DAY: `NOW() + INTERVAL '1 day'`,
-      ONE_WEEK: `NOW() + INTERVAL '7 days'`,
-      ONE_MONTH: `NOW() + INTERVAL '30 days'`,
-    };
 
-    const isPermanent = duration === 'PERMANENTLY';
-    let sql: string;
-
-    if (isPermanent) {
-      sql = `UPDATE users SET do_not_disturb_until = NULL, do_not_disturb_permanently = TRUE
-             WHERE id = $1 RETURNING *`;
-    } else {
-      const interval = intervalMap[duration];
-      sql = `UPDATE users SET do_not_disturb_until = ${interval}, do_not_disturb_permanently = FALSE
-             WHERE id = $1 RETURNING *`;
-    }
-
-    const result = await this.db.query(sql, [userId]);
-    return this.authService.formatUser(result.rows[0]);
-  }
-
-  async clearDnd(userId: string) {
-    const result = await this.db.query(
-      `UPDATE users SET do_not_disturb_until = NULL, do_not_disturb_permanently = FALSE
-       WHERE id = $1 RETURNING *`,
-      [userId],
-    );
-
-    return this.authService.formatUser(result.rows[0]);
-  }
 }
