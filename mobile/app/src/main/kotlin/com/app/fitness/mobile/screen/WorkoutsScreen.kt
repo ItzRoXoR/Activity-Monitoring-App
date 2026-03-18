@@ -1,11 +1,14 @@
 package com.app.fitness.mobile.screen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -15,10 +18,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.app.fitness.*
 import com.app.fitness.mobile.viewmodel.WorkoutsViewModel
+
+private val BG = Color(0xFFF8F8F8)
+private val INK = Color(0xFF2C2C2C)
+private val INK_MUTED = Color(0x802C2C2C)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,49 +39,57 @@ fun WorkoutsScreen(
     var showFilterSheet by remember { mutableStateOf(false) }
 
     if (state.isLoading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+        Box(
+            Modifier.fillMaxSize().background(BG),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = INK)
         }
         return
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BG)
+    ) {
         // tab row + filter button
         Row(verticalAlignment = Alignment.CenterVertically) {
             val tabTitles = listOf("все", "рекомендуемые", "избранное")
             TabRow(
                 selectedTabIndex = state.selectedTab,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                containerColor = BG,
+                contentColor = INK
             ) {
                 tabTitles.forEachIndexed { index, title ->
                     Tab(
                         selected = state.selectedTab == index,
                         onClick = { viewModel.selectTab(index) },
-                        text = { Text(title) }
+                        text = {
+                            Text(
+                                title,
+                                fontFamily = FontFamily.SansSerif,
+                                color = if (state.selectedTab == index) INK else INK_MUTED
+                            )
+                        }
                     )
                 }
             }
             IconButton(onClick = { showFilterSheet = true }) {
-                val tint = if (!state.filter.isEmpty)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                Icon(Icons.Default.FilterList, contentDescription = "фильтр", tint = tint)
+                Icon(
+                    Icons.Default.FilterList,
+                    contentDescription = "фильтр",
+                    tint = if (!state.filter.isEmpty) INK else INK_MUTED
+                )
             }
         }
 
-        // apply filter client-side to whichever list is selected
-        val baseList = when (state.selectedTab) {
-            0 -> state.allWorkouts
-            1 -> state.recommendedWorkouts
-            2 -> state.favoriteWorkouts
-            else -> state.allWorkouts
-        }
-        val workoutsToShow = applyFilter(baseList, state.filter)
+        val workoutsToShow = state.filteredWorkouts
 
         if (workoutsToShow.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("тренировки не найдены", style = MaterialTheme.typography.bodyLarge)
+                Text("тренировки не найдены", fontFamily = FontFamily.SansSerif, fontSize = 15.sp, color = INK_MUTED)
             }
         } else {
             LazyColumn(
@@ -94,6 +111,8 @@ fun WorkoutsScreen(
             Text(
                 text = state.error!!,
                 color = MaterialTheme.colorScheme.error,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 12.sp,
                 modifier = Modifier.padding(16.dp)
             )
         }
@@ -109,23 +128,6 @@ fun WorkoutsScreen(
     }
 }
 
-private fun applyFilter(workouts: List<Workout>, filter: WorkoutFilter): List<Workout> {
-    if (filter.isEmpty) return workouts
-    return workouts.filter { w ->
-        (filter.types.isEmpty() || w.type in filter.types) &&
-        (filter.difficulties.isEmpty() || w.difficulty in filter.difficulties) &&
-        (filter.durations.isEmpty() || filter.durations.any { dur ->
-            val totalMin = w.exercises.sumOf { it.durationSeconds + it.restAfterSeconds } / 60.0
-            when (dur) {
-                DurationRange.SHORT    -> totalMin < 3
-                DurationRange.MEDIUM   -> totalMin in 3.0..5.0
-                DurationRange.LONG     -> totalMin in 5.0..8.0
-                DurationRange.EXTENDED -> totalMin > 8
-            }
-        }) &&
-        (filter.muscleGroups.isEmpty() || w.exercises.any { it.muscleGroup in filter.muscleGroups })
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -140,7 +142,27 @@ private fun FilterBottomSheet(
     var durations by remember { mutableStateOf(current.durations) }
     var muscleGroups by remember { mutableStateOf(current.muscleGroups) }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    val chipColors = FilterChipDefaults.filterChipColors(
+        selectedContainerColor = INK,
+        selectedLabelColor = BG,
+        labelColor = INK
+    )
+    val chipBorder = FilterChipDefaults.filterChipBorder(
+        enabled = true,
+        selected = false,
+        borderColor = INK
+    )
+    val chipBorderSelected = FilterChipDefaults.filterChipBorder(
+        enabled = true,
+        selected = true,
+        borderColor = INK,
+        selectedBorderColor = INK
+    )
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = BG
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -148,25 +170,31 @@ private fun FilterBottomSheet(
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 32.dp)
         ) {
-            Text("фильтр тренировок", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text("фильтр тренировок", fontFamily = FontFamily.SansSerif, fontSize = 20.sp, color = INK)
             Spacer(Modifier.height(16.dp))
 
             FilterSection("тип") {
                 WorkoutType.entries.forEach { type ->
+                    val sel = type in types
                     FilterChip(
-                        selected = type in types,
-                        onClick = { types = if (type in types) types - type else types + type },
-                        label = { Text(type.toRu()) }
+                        selected = sel,
+                        onClick = { types = if (sel) types - type else types + type },
+                        label = { Text(type.toRu()) },
+                        colors = chipColors,
+                        border = if (sel) chipBorderSelected else chipBorder
                     )
                 }
             }
 
             FilterSection("сложность") {
                 DifficultyLevel.entries.forEach { diff ->
+                    val sel = diff in difficulties
                     FilterChip(
-                        selected = diff in difficulties,
-                        onClick = { difficulties = if (diff in difficulties) difficulties - diff else difficulties + diff },
-                        label = { Text(diff.toRu()) }
+                        selected = sel,
+                        onClick = { difficulties = if (sel) difficulties - diff else difficulties + diff },
+                        label = { Text(diff.toRu()) },
+                        colors = chipColors,
+                        border = if (sel) chipBorderSelected else chipBorder
                     )
                 }
             }
@@ -179,20 +207,26 @@ private fun FilterBottomSheet(
                         DurationRange.LONG     -> "5–8 мин"
                         DurationRange.EXTENDED -> "8+ мин"
                     }
+                    val sel = dur in durations
                     FilterChip(
-                        selected = dur in durations,
-                        onClick = { durations = if (dur in durations) durations - dur else durations + dur },
-                        label = { Text(label) }
+                        selected = sel,
+                        onClick = { durations = if (sel) durations - dur else durations + dur },
+                        label = { Text(label) },
+                        colors = chipColors,
+                        border = if (sel) chipBorderSelected else chipBorder
                     )
                 }
             }
 
             FilterSection("группа мышц") {
                 MuscleGroup.entries.forEach { mg ->
+                    val sel = mg in muscleGroups
                     FilterChip(
-                        selected = mg in muscleGroups,
-                        onClick = { muscleGroups = if (mg in muscleGroups) muscleGroups - mg else muscleGroups + mg },
-                        label = { Text(mg.toRu()) }
+                        selected = sel,
+                        onClick = { muscleGroups = if (sel) muscleGroups - mg else muscleGroups + mg },
+                        label = { Text(mg.toRu()) },
+                        colors = chipColors,
+                        border = if (sel) chipBorderSelected else chipBorder
                     )
                 }
             }
@@ -200,14 +234,21 @@ private fun FilterBottomSheet(
             Spacer(Modifier.height(16.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f)) {
-                    Text("сбросить")
+                OutlinedButton(
+                    onClick = onClear,
+                    modifier = Modifier.weight(1f).height(56.dp),
+                    border = androidx.compose.foundation.BorderStroke(2.dp, INK),
+                    shape = RoundedCornerShape(100.dp)
+                ) {
+                    Text("сбросить", color = INK, fontFamily = FontFamily.SansSerif)
                 }
                 Button(
                     onClick = { onApply(WorkoutFilter(types, muscleGroups, difficulties, durations)) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f).height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = INK),
+                    shape = RoundedCornerShape(100.dp)
                 ) {
-                    Text("применить")
+                    Text("применить", color = BG, fontFamily = FontFamily.SansSerif)
                 }
             }
         }
@@ -217,7 +258,7 @@ private fun FilterBottomSheet(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FilterSection(title: String, content: @Composable FlowRowScope.() -> Unit) {
-    Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+    Text(title, fontFamily = FontFamily.SansSerif, fontSize = 13.sp, color = INK_MUTED)
     Spacer(Modifier.height(6.dp))
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), content = content)
     Spacer(Modifier.height(16.dp))
@@ -232,8 +273,9 @@ private fun WorkoutCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .border(1.dp, INK, RoundedCornerShape(12.dp))
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Row(
             modifier = Modifier
@@ -245,23 +287,22 @@ private fun WorkoutCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = workout.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 16.sp,
+                    color = INK
                 )
 
                 val totalSec = workout.exercises.sumOf { it.durationSeconds + it.restAfterSeconds }
                 val durationDisplay = if (totalSec % 60 == 0) "${totalSec / 60} мин"
                                       else "${totalSec / 60} м ${totalSec % 60} с"
                 val infoLine = "${workout.type.toRu()} · ${workout.difficulty.toRu()} · $durationDisplay"
-                Text(infoLine, style = MaterialTheme.typography.bodySmall)
-
-                Text("${workout.exercises.size} упр.", style = MaterialTheme.typography.bodySmall)
+                Text(infoLine, fontFamily = FontFamily.SansSerif, fontSize = 12.sp, color = INK_MUTED)
+                Text("${workout.exercises.size} упр.", fontFamily = FontFamily.SansSerif, fontSize = 12.sp, color = INK_MUTED)
             }
 
             IconButton(onClick = onToggleFavorite) {
                 val icon = if (workout.isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder
-                val tint = if (workout.isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-                Icon(icon, contentDescription = "избранное", tint = tint)
+                Icon(icon, contentDescription = "избранное", tint = INK)
             }
         }
     }
