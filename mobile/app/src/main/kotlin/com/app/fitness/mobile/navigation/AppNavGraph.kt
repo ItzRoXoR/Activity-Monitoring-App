@@ -22,8 +22,15 @@ import com.app.fitness.mobile.viewmodel.*
 
 // route names
 object Routes {
+
+    const val AUTH = "auth"
     const val LOGIN = "login"
+
     const val REGISTER = "register"
+    /*const val REGISTER_GRAPH = "register_graph"
+    const val REGISTER_START = "register_start"
+    const val REGISTER_BODY = "register_body"
+    const val REGISTER_GOALS = "register_goals"*/
     const val HOME = "home"
     const val WORKOUTS = "workouts"
     const val WORKOUT_DETAIL = "workouts/{workoutId}"
@@ -38,7 +45,7 @@ fun AppNavGraph(sdk: FitnessSdk) {
     val navController = rememberNavController()
 
     // check if user has a stored token to decide start destination
-    val startDest = if (sdk.hasStoredToken) Routes.HOME else Routes.LOGIN
+    val startDest = if (sdk.hasStoredToken) Routes.HOME else Routes.AUTH
 
     // ACTIVITY_RECOGNITION (API 29+) and POST_NOTIFICATIONS (API 33+) are both
     // runtime permissions required before starting the step counter service.
@@ -108,6 +115,24 @@ fun AppNavGraph(sdk: FitnessSdk) {
             startDestination = startDest,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(Routes.AUTH) {
+
+                val vm: LoginViewModel = viewModel(
+                    factory = LoginViewModelFactory(sdk.auth)
+                )
+
+                AuthStartScreen(
+                    viewModel = vm,
+                    onLoginClick = {
+                        navController.navigate(Routes.LOGIN)
+                    },
+                    onRegisterClick = {
+                        navController.navigate(Routes.REGISTER)
+                    }
+                )
+            }
+
+
             composable(Routes.LOGIN) {
                 val vm: LoginViewModel = viewModel(
                     factory = LoginViewModelFactory(sdk.auth)
@@ -127,6 +152,7 @@ fun AppNavGraph(sdk: FitnessSdk) {
                 )
             }
 
+            //старый метод регистрации
             composable(Routes.REGISTER) {
                 val vm: RegisterViewModel = viewModel(
                     factory = RegisterViewModelFactory(sdk.auth)
@@ -144,6 +170,76 @@ fun AppNavGraph(sdk: FitnessSdk) {
                     }
                 )
             }
+            /*navigation(
+                route = Routes.REGISTER_GRAPH,
+                startDestination = Routes.REGISTER_START
+            ) {
+
+                composable(Routes.REGISTER_START) { backStackEntry ->
+
+                    val parentEntry = remember(backStackEntry) {
+                        navController.getBackStackEntry(Routes.REGISTER_GRAPH)
+                    }
+
+                    val vm: RegisterViewModel = viewModel(
+                        parentEntry,
+                        factory = RegisterViewModelFactory(sdk.auth)
+                    )
+
+                    RegisterStartScreen(
+                        viewModel = vm,
+                        onNext = {
+                            navController.navigate(Routes.REGISTER_BODY)
+                        },
+                        onGoToLogin = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
+
+                composable(Routes.REGISTER_BODY) { backStackEntry ->
+
+                    val parentEntry = remember(backStackEntry) {
+                        navController.getBackStackEntry(Routes.REGISTER_GRAPH)
+                    }
+
+                    val vm: RegisterViewModel = viewModel(
+                        parentEntry,
+                        factory = RegisterViewModelFactory(sdk.auth)
+                    )
+
+                    RegisterBodyScreen(
+                        viewModel = vm,
+                        onNext = {
+                            navController.navigate(Routes.REGISTER_GOALS)
+                        }
+                    )
+                }
+
+                composable(Routes.REGISTER_GOALS) { backStackEntry ->
+
+                    val parentEntry = remember(backStackEntry) {
+                        navController.getBackStackEntry(Routes.REGISTER_GRAPH)
+                    }
+
+                    val vm: RegisterViewModel = viewModel(
+                        parentEntry,
+                        factory = RegisterViewModelFactory(sdk.auth)
+                    )
+
+                    RegisterGoalsScreen(
+                        viewModel = vm,
+                        onRegisterSuccess = {
+                            startStepCountingWithPermission()
+
+                            navController.navigate(Routes.HOME) {
+                                popUpTo(Routes.LOGIN) { inclusive = true }
+                            }
+                        }
+                    )
+                }
+            }*/
+
 
             composable(Routes.HOME) {
                 val vm: HomeViewModel = viewModel(

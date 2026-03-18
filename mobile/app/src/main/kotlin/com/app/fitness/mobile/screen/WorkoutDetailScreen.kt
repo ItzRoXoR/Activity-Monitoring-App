@@ -1,7 +1,10 @@
 package com.app.fitness.mobile.screen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -9,12 +12,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.app.fitness.DifficultyLevel
 import com.app.fitness.MuscleGroup
 import com.app.fitness.WorkoutType
 import com.app.fitness.mobile.viewmodel.WorkoutDetailViewModel
+
+private val BG = Color(0xFFF8F8F8)
+private val INK = Color(0xFF2C2C2C)
+private val INK_MUTED = Color(0x802C2C2C)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,25 +34,40 @@ fun WorkoutDetailScreen(
     val state by viewModel.state.collectAsState()
 
     Scaffold(
+        containerColor = BG,
         topBar = {
             TopAppBar(
-                title = { Text(state.workout?.title ?: "тренировка") },
+                title = {
+                    Text(
+                        state.workout?.title ?: "тренировка",
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 20.sp,
+                        color = INK
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "назад")
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "назад",
+                            tint = INK
+                        )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = BG,
+                    navigationIconContentColor = INK,
+                    titleContentColor = INK
+                )
             )
         }
     ) { padding ->
         if (state.isLoading) {
             Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding),
+                Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = INK)
             }
             return@Scaffold
         }
@@ -62,21 +86,20 @@ fun WorkoutDetailScreen(
             val durationDisplay = if (totalSec % 60 == 0) "${totalSec / 60} мин"
                                   else "${totalSec / 60} м ${totalSec % 60} с"
             val infoLine = "${workout.type.toRu()} · ${workout.difficulty.toRu()} · $durationDisplay"
-            Text(infoLine, style = MaterialTheme.typography.bodyLarge)
+            Text(infoLine, fontFamily = FontFamily.SansSerif, fontSize = 15.sp, color = INK_MUTED)
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            val calText = "ожидаемый расход: ${state.estimatedCalories.toInt()} ккал"
-            Text(calText, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+            Text(
+                "ожидаемый расход: ${state.estimatedCalories.toInt()} ккал",
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 15.sp,
+                color = INK
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // exercise list
-            Text(
-                "упражнения",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Text("упражнения", fontFamily = FontFamily.SansSerif, fontSize = 15.sp, color = INK_MUTED)
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -85,32 +108,28 @@ fun WorkoutDetailScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 4.dp)
+                        .border(
+                            1.dp,
+                            INK,
+                            RoundedCornerShape(12.dp)
+                        ),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isActive)
-                            MaterialTheme.colorScheme.primaryContainer
-                        else
-                            MaterialTheme.colorScheme.surfaceVariant
+                        containerColor = if (isActive) INK else Color.White
                     )
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        val numberLabel = "${index + 1}. ${exercise.title}"
                         Text(
-                            numberLabel,
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isActive) MaterialTheme.colorScheme.onPrimaryContainer
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                            "${index + 1}. ${exercise.title}",
+                            fontFamily = FontFamily.SansSerif,
+                            fontSize = 14.sp,
+                            color = if (isActive) BG else INK
                         )
-
-                        val detailLine = "${exercise.muscleGroup.toRu()} · " +
-                                "${exercise.durationSeconds}с · " +
-                                "отдых ${exercise.restAfterSeconds}с"
                         Text(
-                            detailLine,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (isActive) MaterialTheme.colorScheme.onPrimaryContainer
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                            "${exercise.muscleGroup.toRu()} · ${exercise.durationSeconds}с · отдых ${exercise.restAfterSeconds}с",
+                            fontFamily = FontFamily.SansSerif,
+                            fontSize = 12.sp,
+                            color = if (isActive) Color(0xCCF8F8F8) else INK_MUTED
                         )
                     }
                 }
@@ -122,37 +141,40 @@ fun WorkoutDetailScreen(
             if (state.isSessionActive) {
                 val minutes = state.elapsedSeconds / 60
                 val seconds = state.elapsedSeconds % 60
-                val timerText = "%02d:%02d".format(minutes, seconds)
                 Text(
-                    timerText,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    "%02d:%02d".format(minutes, seconds),
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 48.sp,
+                    color = INK
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
                 OutlinedButton(
                     onClick = viewModel::abandonSession,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    border = androidx.compose.foundation.BorderStroke(2.dp, INK),
+                    shape = RoundedCornerShape(100.dp)
                 ) {
-                    Text("прервать")
+                    Text("прервать", color = INK, fontFamily = FontFamily.SansSerif, fontSize = 16.sp)
                 }
             } else {
                 Button(
                     onClick = viewModel::startSession,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = INK),
+                    shape = RoundedCornerShape(100.dp)
                 ) {
-                    Text("начать тренировку")
+                    Text("начать тренировку", color = BG, fontFamily = FontFamily.SansSerif, fontSize = 16.sp)
                 }
             }
 
-            // error
             if (state.error != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = state.error!!,
                     color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    fontFamily = FontFamily.SansSerif,
+                    fontSize = 12.sp
                 )
             }
         }
@@ -160,10 +182,13 @@ fun WorkoutDetailScreen(
         if (state.isCompleted && state.completedMessage != null) {
             AlertDialog(
                 onDismissRequest = {},
-                title = { Text("поздравляем!") },
-                text = { Text(state.completedMessage!!) },
+                containerColor = BG,
+                title = { Text("поздравляем!", fontFamily = FontFamily.SansSerif, color = INK) },
+                text = { Text(state.completedMessage!!, fontFamily = FontFamily.SansSerif, color = INK) },
                 confirmButton = {
-                    TextButton(onClick = onBack) { Text("ок") }
+                    TextButton(onClick = onBack) {
+                        Text("ок", color = INK, fontFamily = FontFamily.SansSerif)
+                    }
                 }
             )
         }
