@@ -90,11 +90,10 @@ class WorkoutDetailViewModel(
             }
             // all exercises finished — auto-complete the session
             val sid = _state.value.sessionId ?: return@launch
-            val cals = _state.value.estimatedCalories
             try {
-                sessionRepo.completeSession(sid, cals)
+                val session = sessionRepo.completeSession(sid).getOrThrow()
                 _state.update {
-                    it.copy(isSessionActive = false, isCompleted = true, completedMessage = "тренировка завершена! сожжено ~${cals.toInt()} ккал")
+                    it.copy(isSessionActive = false, isCompleted = true, completedMessage = "тренировка завершена! сожжено ~${session.burnedCalories.toInt()} ккал")
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(isSessionActive = false, error = e.message) }
@@ -113,17 +112,16 @@ class WorkoutDetailViewModel(
 
     fun completeSession() {
         val sid = _state.value.sessionId ?: return
-        val cals = _state.value.estimatedCalories
         timerJob?.cancel()
 
         viewModelScope.launch {
             try {
-                sessionRepo.completeSession(sid, cals)
+                val session = sessionRepo.completeSession(sid).getOrThrow()
                 _state.update {
                     it.copy(
                         isSessionActive = false,
                         isCompleted = true,
-                        completedMessage = "тренировка завершена! сожжено ~${cals.toInt()} ккал"
+                        completedMessage = "тренировка завершена! сожжено ~${session.burnedCalories.toInt()} ккал"
                     )
                 }
             } catch (e: Exception) {
