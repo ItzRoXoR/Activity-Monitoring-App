@@ -1,13 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 
-// duration range boundaries matching the mobile enum
-const DURATION_RANGES: Record<string, { min: number; max: number }> = {
-  SHORT: { min: 5, max: 10 },
-  MEDIUM: { min: 10, max: 15 },
-  LONG: { min: 15, max: 20 },
-  EXTENDED: { min: 20, max: 999999 },
-};
 
 @Injectable()
 export class WorkoutsService {
@@ -30,7 +23,6 @@ export class WorkoutsService {
       met: e.met,
       durationSeconds: e.duration_seconds,
       restAfterSeconds: e.rest_after_seconds,
-      imageResId: e.image_res_id,
     }));
   }
 
@@ -89,72 +81,6 @@ export class WorkoutsService {
       [userId],
     );
     return this.hydrateWorkouts(result.rows, userId);
-  }
-
-  async getFavoritesPreview(userId: string) {
-    const result = await this.db.query(
-      `SELECT w.* FROM workouts w
-       JOIN user_favorites uf ON uf.workout_id = w.id
-       WHERE uf.user_id = $1
-       ORDER BY w.title LIMIT 5`,
-      [userId],
-    );
-    return this.hydrateWorkouts(result.rows, userId);
-  }
-
-  async filter(dto: { types?: string[]; muscleGroups?: string[]; difficulties?: string[]; durations?: string[] }) {
-    const types = dto.types ?? [];
-    const muscleGroups = dto.muscleGroups ?? [];
-    const difficulties = dto.difficulties ?? [];
-    const durations = dto.durations ?? [];
-
-    let sql = 'SELECT DISTINCT w.* FROM workouts w';
-    const conditions: string[] = [];
-    const params: any[] = [];
-    let idx = 1;
-
-    // join exercises table only if filtering by muscle group
-    const needsMuscleJoin = muscleGroups.length > 0;
-    if (needsMuscleJoin) {
-      sql += ' JOIN workout_exercises we ON we.workout_id = w.id JOIN exercises e ON e.id = we.exercise_id';
-      conditions.push(`e.muscle_group = ANY($${idx++})`);
-      params.push(muscleGroups);
-    }
-
-    if (types.length > 0) {
-      conditions.push(`w.type = ANY($${idx++})`);
-      params.push(types);
-    }
-
-    if (difficulties.length > 0) {
-      conditions.push(`w.difficulty = ANY($${idx++})`);
-      params.push(difficulties);
-    }
-
-    if (durations.length > 0) {
-      const durationClauses: string[] = [];
-      for (const d of durations) {
-        const range = DURATION_RANGES[d];
-        if (range) {
-          durationClauses.push(
-            `(w.duration_minutes >= ${range.min} AND w.duration_minutes <= ${range.max})`,
-          );
-        }
-      }
-      const hasDurationFilters = durationClauses.length > 0;
-      if (hasDurationFilters) {
-        conditions.push(`(${durationClauses.join(' OR ')})`);
-      }
-    }
-
-    const hasConditions = conditions.length > 0;
-    if (hasConditions) {
-      sql += ' WHERE ' + conditions.join(' AND ');
-    }
-    sql += ' ORDER BY w.title';
-
-    const result = await this.db.query(sql, params);
-    return this.hydrateWorkouts(result.rows);
   }
 
   async getById(workoutId: string) {

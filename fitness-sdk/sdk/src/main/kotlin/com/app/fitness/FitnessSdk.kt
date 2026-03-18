@@ -22,8 +22,7 @@ class FitnessSdk(
 
     val auth: AuthRepository = AuthRepositoryImpl(apiClient)
     val user: UserRepository = UserRepositoryImpl(apiClient)
-    val activity: ActivityRepository = ActivityRepositoryImpl(apiClient, context.applicationContext)
-    val weight: WeightRepository = WeightRepositoryImpl(apiClient)
+    val activity: ActivityRepository = ActivityRepositoryImpl(apiClient)
     val workouts: WorkoutRepository = WorkoutRepositoryImpl(apiClient)
     val sessions: WorkoutSessionRepository = WorkoutSessionRepositoryImpl(apiClient)
     val calorieCalculator: CalorieCalculatorService = CalorieCalculatorServiceImpl()

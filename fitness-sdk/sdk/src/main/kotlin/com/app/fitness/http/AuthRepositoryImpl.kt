@@ -18,14 +18,7 @@ class AuthRepositoryImpl internal constructor(
     private val api get() = client.service
     private val tokenStore get() = client.tokenStore
 
-    override suspend fun isAuthenticated(): Boolean {
-        return try {
-            val resp = api.me()
-            resp.isSuccessful && resp.body()?.authenticated == true
-        } catch (e: Exception) {
-            false
-        }
-    }
+    override suspend fun isAuthenticated(): Boolean = tokenStore.token != null
 
     override suspend fun login(username: String, password: String): Result<User> =
         runCatching {

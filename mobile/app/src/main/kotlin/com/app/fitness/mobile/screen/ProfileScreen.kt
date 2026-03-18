@@ -1,17 +1,26 @@
 package com.app.fitness.mobile.screen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.app.fitness.mobile.viewmodel.ProfileViewModel
+
+private val BG = Color(0xFFF8F8F8)
+private val INK = Color(0xFF2C2C2C)
+private val INK_MUTED = Color(0x802C2C2C)
 
 @Composable
 fun ProfileScreen(
@@ -21,24 +30,40 @@ fun ProfileScreen(
     val state by viewModel.state.collectAsState()
 
     if (state.isLoading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+        Box(
+            Modifier.fillMaxSize().background(BG),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator(color = INK)
         }
         return
     }
 
     val user = state.user
 
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = INK,
+        unfocusedBorderColor = INK_MUTED,
+        focusedLabelColor = INK,
+        unfocusedLabelColor = INK_MUTED,
+        cursorColor = INK,
+        focusedTextColor = INK,
+        unfocusedTextColor = INK
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(BG)
             .padding(20.dp)
             .verticalScroll(rememberScrollState())
     ) {
         Text(
             text = "профиль",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontFamily = FontFamily.SansSerif,
+            fontSize = 36.sp,
+            letterSpacing = 0.25.sp,
+            color = INK
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -46,14 +71,21 @@ fun ProfileScreen(
         // user info card
         if (user != null) {
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, INK, RoundedCornerShape(12.dp)),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(user.name, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    Text("@${user.username}", style = MaterialTheme.typography.bodyMedium)
+                    Text(user.name, fontFamily = FontFamily.SansSerif, fontSize = 20.sp, color = INK)
+                    Text("@${user.username}", fontFamily = FontFamily.SansSerif, fontSize = 15.sp, color = INK_MUTED)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("${user.gender.name.lowercase()} · р. ${user.dateOfBirth}", style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "${user.gender.name.lowercase()} · р. ${user.dateOfBirth}",
+                        fontFamily = FontFamily.SansSerif,
+                        fontSize = 12.sp,
+                        color = INK_MUTED
+                    )
                 }
             }
         }
@@ -61,7 +93,7 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         // body measurements section
-        Text("тело", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        Text("тело", fontFamily = FontFamily.SansSerif, fontSize = 15.sp, color = INK_MUTED)
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -71,6 +103,7 @@ fun ProfileScreen(
                 label = { Text("вес (кг)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
+                colors = fieldColors,
                 modifier = Modifier.weight(1f)
             )
             OutlinedTextField(
@@ -79,6 +112,7 @@ fun ProfileScreen(
                 label = { Text("рост (см)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
+                colors = fieldColors,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -88,15 +122,17 @@ fun ProfileScreen(
         Button(
             onClick = viewModel::saveProfile,
             enabled = !state.isSaving,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = INK),
+            shape = RoundedCornerShape(100.dp)
         ) {
-            Text("сохранить профиль")
+            Text("сохранить профиль", color = BG, fontFamily = FontFamily.SansSerif, fontSize = 16.sp)
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
         // goals section
-        Text("дневные цели", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        Text("дневные цели", fontFamily = FontFamily.SansSerif, fontSize = 15.sp, color = INK_MUTED)
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -106,6 +142,7 @@ fun ProfileScreen(
                 label = { Text("шаги") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
+                colors = fieldColors,
                 modifier = Modifier.weight(1f)
             )
             OutlinedTextField(
@@ -114,6 +151,7 @@ fun ProfileScreen(
                 label = { Text("калории") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
+                colors = fieldColors,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -123,9 +161,11 @@ fun ProfileScreen(
         Button(
             onClick = viewModel::saveGoals,
             enabled = !state.isSaving,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = INK),
+            shape = RoundedCornerShape(100.dp)
         ) {
-            Text("сохранить цели")
+            Text("сохранить цели", color = BG, fontFamily = FontFamily.SansSerif, fontSize = 16.sp)
         }
 
         // success / error messages
@@ -133,8 +173,9 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = state.successMessage!!,
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.bodySmall
+                color = INK_MUTED,
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 12.sp
             )
         }
 
@@ -143,7 +184,8 @@ fun ProfileScreen(
             Text(
                 text = state.error!!,
                 color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall
+                fontFamily = FontFamily.SansSerif,
+                fontSize = 12.sp
             )
         }
 
@@ -155,10 +197,11 @@ fun ProfileScreen(
                 viewModel.logout()
                 onLogout()
             },
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            border = androidx.compose.foundation.BorderStroke(2.dp, INK),
+            shape = RoundedCornerShape(100.dp)
         ) {
-            Text("выйти")
+            Text("выйти", color = INK, fontFamily = FontFamily.SansSerif, fontSize = 16.sp)
         }
 
         Spacer(modifier = Modifier.height(16.dp))

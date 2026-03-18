@@ -2,7 +2,6 @@ package com.app.fitness.http
 
 import com.app.fitness.*
 import com.app.fitness.http.DtoMapper.toDomain
-import com.app.fitness.http.dto.WorkoutFilterRequest
 
 /** HTTP implementation of [WorkoutRepository]. */
 class WorkoutRepositoryImpl internal constructor(
@@ -23,28 +22,9 @@ class WorkoutRepositoryImpl internal constructor(
         return (resp.body() ?: emptyList()).map { it.toDomain() }
     }
 
-    override suspend fun getFavoriteWorkoutsPreview(): List<Workout> {
-        val resp = api.getFavoriteWorkoutsPreview()
-        check(resp.isSuccessful) { "getFavoriteWorkoutsPreview failed: HTTP ${resp.code()}" }
-        return (resp.body() ?: emptyList()).map { it.toDomain() }
-    }
-
     override suspend fun getAllFavoriteWorkouts(): List<Workout> {
         val resp = api.getFavoriteWorkouts()
         check(resp.isSuccessful) { "getAllFavoriteWorkouts failed: HTTP ${resp.code()}" }
-        return (resp.body() ?: emptyList()).map { it.toDomain() }
-    }
-
-    override suspend fun applyFilter(filter: WorkoutFilter): List<Workout> {
-        val resp = api.filterWorkouts(
-            WorkoutFilterRequest(
-                types        = filter.types.map { it.name },
-                muscleGroups = filter.muscleGroups.map { it.name },
-                difficulties = filter.difficulties.map { it.name },
-                durations    = filter.durations.map { it.name }
-            )
-        )
-        check(resp.isSuccessful) { "applyFilter failed: HTTP ${resp.code()}" }
         return (resp.body() ?: emptyList()).map { it.toDomain() }
     }
 

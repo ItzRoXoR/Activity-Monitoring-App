@@ -1,9 +1,8 @@
 import {
-  Controller, Get, Post, Body, Param, Req, UseGuards,
+  Controller, Get, Post, Param, Req, UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../auth/auth.guard';
 import { WorkoutsService } from './workouts.service';
-import { WorkoutFilterDto } from './workouts.dto';
 
 @Controller('workouts')
 export class WorkoutsController {
@@ -24,17 +23,6 @@ export class WorkoutsController {
   @UseGuards(AuthGuard)
   async getFavorites(@Req() req: any) {
     return this.workoutsService.getFavorites(req.userId);
-  }
-
-  @Get('favorites/preview')
-  @UseGuards(AuthGuard)
-  async getFavoritesPreview(@Req() req: any) {
-    return this.workoutsService.getFavoritesPreview(req.userId);
-  }
-
-  @Post('filter')
-  async filter(@Body() dto: WorkoutFilterDto) {
-    return this.workoutsService.filter(dto);
   }
 
   @Get(':id')

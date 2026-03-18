@@ -13,6 +13,7 @@ data class WorkoutsState(
     val allWorkouts: List<Workout> = emptyList(),
     val recommendedWorkouts: List<Workout> = emptyList(),
     val favoriteWorkouts: List<Workout> = emptyList(),
+    val filteredWorkouts: List<Workout> = emptyList(),
     val filter: WorkoutFilter = WorkoutFilter(),
     val isLoading: Boolean = true,
     val error: String? = null,
@@ -38,12 +39,13 @@ class WorkoutsViewModel(private val workoutRepo: WorkoutRepository) : ViewModel(
                 val favorites = runCatching { workoutRepo.getAllFavoriteWorkouts() }.getOrDefault(emptyList())
 
                 _state.update {
-                    it.copy(
+                    val next = it.copy(
                         allWorkouts = all,
                         recommendedWorkouts = recommended,
                         favoriteWorkouts = favorites,
                         isLoading = false
                     )
+                    next.copy(filteredWorkouts = computeFiltered(next))
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(isLoading = false, error = e.message) }
@@ -52,7 +54,10 @@ class WorkoutsViewModel(private val workoutRepo: WorkoutRepository) : ViewModel(
     }
 
     fun selectTab(index: Int) {
-        _state.update { it.copy(selectedTab = index) }
+        _state.update {
+            val next = it.copy(selectedTab = index)
+            next.copy(filteredWorkouts = computeFiltered(next))
+        }
     }
 
     fun toggleFavorite(workoutId: String) {
@@ -71,11 +76,12 @@ class WorkoutsViewModel(private val workoutRepo: WorkoutRepository) : ViewModel(
                     } else {
                         s.favoriteWorkouts.filter { it.id != workoutId }
                     }
-                    s.copy(
+                    val next = s.copy(
                         allWorkouts = updatedAll,
                         recommendedWorkouts = updatedRecommended,
                         favoriteWorkouts = updatedFavorites
                     )
+                    next.copy(filteredWorkouts = computeFiltered(next))
                 }
             }.onFailure {
                 _state.update { it.copy(error = "не удалось обновить избранное") }
@@ -84,11 +90,42 @@ class WorkoutsViewModel(private val workoutRepo: WorkoutRepository) : ViewModel(
     }
 
     fun applyFilter(filter: WorkoutFilter) {
-        _state.update { it.copy(filter = filter) }
+        _state.update {
+            val next = it.copy(filter = filter)
+            next.copy(filteredWorkouts = computeFiltered(next))
+        }
     }
 
     fun clearFilter() {
-        _state.update { it.copy(filter = WorkoutFilter()) }
+        _state.update {
+            val next = it.copy(filter = WorkoutFilter())
+            next.copy(filteredWorkouts = computeFiltered(next))
+        }
+    }
+
+    private fun computeFiltered(state: WorkoutsState): List<Workout> {
+        val base = when (state.selectedTab) {
+            0 -> state.allWorkouts
+            1 -> state.recommendedWorkouts
+            2 -> state.favoriteWorkouts
+            else -> state.allWorkouts
+        }
+        val f = state.filter
+        if (f.isEmpty) return base
+        return base.filter { w ->
+            (f.types.isEmpty() || w.type in f.types) &&
+            (f.difficulties.isEmpty() || w.difficulty in f.difficulties) &&
+            (f.muscleGroups.isEmpty() || w.exercises.any { it.muscleGroup in f.muscleGroups }) &&
+            (f.durations.isEmpty() || f.durations.any { dur ->
+                val totalMin = w.exercises.sumOf { it.durationSeconds + it.restAfterSeconds } / 60.0
+                when (dur) {
+                    DurationRange.SHORT    -> totalMin < 3
+                    DurationRange.MEDIUM   -> totalMin in 3.0..5.0
+                    DurationRange.LONG     -> totalMin in 5.0..8.0
+                    DurationRange.EXTENDED -> totalMin > 8
+                }
+            })
+        }
     }
 }
 

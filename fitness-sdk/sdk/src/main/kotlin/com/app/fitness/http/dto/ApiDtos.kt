@@ -19,8 +19,7 @@ data class UserDto(
     val id: String, val name: String, val username: String,
     val gender: String, val dateOfBirth: String,
     val weightKg: Float, val heightCm: Float,
-    val dailyStepsGoal: Int, val dailyCaloriesGoal: Int,
-    val doNotDisturbUntil: String?, val doNotDisturbPermanently: Boolean
+    val dailyStepsGoal: Int, val dailyCaloriesGoal: Int
 )
 
 data class UpdateProfileRequest(
@@ -31,8 +30,6 @@ data class UpdateProfileRequest(
 
 data class UpdateGoalsRequest(val stepsGoal: Int, val caloriesGoal: Int)
 
-data class SetDndRequest(val duration: String)
-
 // -- activity --
 
 data class DailyActivityDto(
@@ -42,20 +39,11 @@ data class DailyActivityDto(
 
 data class SaveStepsRequest(val totalStepsSinceBoot: Int, val timestamp: String)
 
-data class AddCaloriesRequest(val calories: Double, val timestamp: String? = null)
-
-// -- weight --
-
-data class WeightEntryDto(val date: String, val weightKg: Float)
-
-data class LogWeightRequest(val weightKg: Float, val date: String? = null)
-
 // -- workout --
 
 data class ExerciseDto(
     val id: String, val title: String, val muscleGroup: String,
-    val met: Double, val durationSeconds: Int, val restAfterSeconds: Int,
-    val imageResId: Int?
+    val met: Double, val durationSeconds: Int, val restAfterSeconds: Int
 )
 
 data class WorkoutDto(
@@ -64,22 +52,13 @@ data class WorkoutDto(
     val exercises: List<ExerciseDto>, val isFavorite: Boolean
 )
 
-data class WorkoutFilterRequest(
-    val types: List<String> = emptyList(),
-    val muscleGroups: List<String> = emptyList(),
-    val difficulties: List<String> = emptyList(),
-    val durations: List<String> = emptyList()
-)
-
 data class ToggleFavoriteResponse(val isFavorite: Boolean)
 
 // -- session --
 
 data class StartSessionRequest(val workoutId: String)
 
-data class CompleteSessionRequest(
-    val burnedCalories: Double, val finishedAt: String? = null
-)
+data class CompleteSessionRequest(val finishedAt: String? = null)
 
 data class WorkoutSessionDto(
     val id: String, val workoutId: String,

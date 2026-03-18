@@ -1,6 +1,6 @@
 # Built output
-build/
 .gradle/
+app/build/
 
 # Heap dumps
 *.hprof
